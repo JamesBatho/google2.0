@@ -1,35 +1,43 @@
 import Head from "next/head";
 import Header from "../.next/components/Header";
 import { API_KEY, CONTEXT_KEY } from "../keys";
+import Response from "../Response";
+import { useRouter } from "next/router";
+import SearchResults from "../.next/components/SearchResults";
 
 function Search({ results }) {
-  console.log(results);
+  const router = useRouter();
+  // console.log(results);
   return (
     <div>
       <Head>
-        <title> Search Results</title>
+        <title> {router.query.term} - Google Search </title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {/* header */}
       <Header />
-      {/* se arch results */}
+      {/* search results */}
+      <SearchResults results={results} />
     </div>
   );
 }
 
 export default Search;
 
-// export async function getServerSideProps(context) {
-//   const useDummyData = false;
+export async function getServerSideProps(context) {
+  const useDummyData = false;
+  const startIndex = context.query.start || "0";
 
-//   const data = await fetch(
-//     `https://www.gooogleapis.com/customsearch/v1?key=${API_KEY}&cx=${CONTEXT_KEY}&q=${context.query.term}`
-//   ).then((response) => response.json());
+  const data = useDummyData
+    ? Response
+    : await fetch(
+        `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CONTEXT_KEY}&q=${context.query.term}&start=${startIndex}`
+      ).then((response) => response.json());
 
-//   //  After the SERVER has rendered --> pass results to client
-//   return {
-//     props: {
-//       results: data,
-//     },
-//   };
-// }
+  //  After the SERVER has rendered --> pass results to client
+  return {
+    props: {
+      results: data,
+    },
+  };
+}
